@@ -1,0 +1,12 @@
+{
+  "name": "spotify-current-track",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "echo 'Build step' && exit 0"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
