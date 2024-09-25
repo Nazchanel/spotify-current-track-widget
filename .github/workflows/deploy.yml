@@ -3,33 +3,37 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main
+      - main  # Change this to the branch you want to trigger the deployment from
+
+permissions:
+  contents: write  # Grant write access to contents
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'  # Specify your Node.js version
 
       - name: Install dependencies
         run: npm install
 
-      - name: Inject environment variable
-        run: |
-          echo "REACT_APP_SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }}" >> .env
+      - name: Build the project
+        run: npm run build  # Change this if you have a different build command
 
-      - name: Build the app
-        run: npm run build
+      - name: Inject environment variables
+        run: |
+          echo "SPOTIFY_CLIENT_ID=${{ secrets.SPOTIFY_CLIENT_ID }}" >> $GITHUB_ENV
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build
-
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # Ensure this token is used
+          publish_dir: ./public  # Change this to your directory to publish
+          publish_branch: master  # Change this if necessary
