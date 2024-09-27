@@ -15,9 +15,6 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views')); // Set the views directory
 
-// Serve static files from the public directory
-app.use(express.static('public'));
-
 // Use CORS middleware
 app.use(cors());
 
@@ -26,6 +23,7 @@ app.get('/other', (req, res) => {
     const accessToken = process.env.ACCESS_TOKEN; // Get access token from environment variable
     res.render('index', { accessToken });
 });
+
 // Route to fetch currently playing track as JSON
 app.get('/currently-playing', async (req, res) => {
     const accessToken = process.env.ACCESS_TOKEN; // Use your stored access token
@@ -164,10 +162,13 @@ app.get('/', async (req, res) => {
         res.status(500).send('Error fetching track info.');
     }
 });
+
+// Route to render pretty page
 app.get('/pretty', async (req, res) => {
     const clientId = process.env.SPOTIFY_CLIENT_ID || 'YOUR_CLIENT_ID_HERE'; // Fallback for local testing
-    res.render('index', { clientId }); // Pass clientId to the EJS template
-}
+    res.render('pretty', { clientId }); // Pass clientId to the EJS template
+}); // Fixed closing bracket here
+
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
