@@ -26,7 +26,11 @@ jobs:
 
       - name: Update README.md
         run: |
-          awk -v run_number="${{ github.run_number }}" '{gsub(/!\[\]\(songs-pictures\/image.png\)/, "![](songs-pictures/image" run_number ".png)")}1' README.md > temp.md && mv temp.md README.md
+          # Calculate last run number
+          current_run_number=${{ github.run_number }}  # Replace this with the actual value
+          last_run_number=$((current_run_number - 1))
+
+          awk -v last_run_number="$last_run_number" '{gsub(/!\[\]\(songs-pictures\/image\([0-9]+\)\.png\)/, "![](songs-pictures/image(" last_run_number ").png)")}1' README.md > temp.md && mv temp.md README.md
       
       - name: Commit and push changes
         run: |
