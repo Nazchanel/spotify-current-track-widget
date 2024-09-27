@@ -32,17 +32,26 @@ jobs:
             next=1  # Start with 1 if no images exist
           fi
           echo "next_image=$next" >> $GITHUB_ENV
+          echo "Next image will be: image$next.png"  # Debug output
 
       - name: Rename and Update README
         run: |
           # Define the new filename
           new_filename="songs-pictures/image${{ env.next_image }}.png"
+          echo "Renaming image to: $new_filename"  # Debug output
           
-          # Rename the image
-          mv songs-pictures/image.png "$new_filename"
+          # Check if the original image exists
+          if [ -f "songs-pictures/image.png" ]; then
+            # Rename the image
+            mv songs-pictures/image.png "$new_filename"
+          else
+            echo "Error: songs-pictures/image.png does not exist."
+            exit 1  # Exit if the image does not exist
+          fi
 
           # Update the README.md file
           sed -i "s|![](songs-pictures/image.png)|![]($new_filename)|" README.md
+          echo "Updated README.md to reference $new_filename"  # Debug output
 
       - name: Commit and push changes
         run: |
