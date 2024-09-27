@@ -21,6 +21,15 @@ app.set('views', path.join(__dirname, 'views')); // Set the views directory
 // Use CORS middleware
 app.use(cors());
 
+function escapeXML(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/'/g, "&apos;")
+        .replace(/"/g, "&quot;");
+}
+
 // Function to refresh the access token
 async function refreshAccessToken() {
     const tokenUrl = 'https://accounts.spotify.com/api/token';
@@ -150,8 +159,8 @@ app.get('/', async (req, res) => {
                 role="img"
                 aria-labelledby="descId"
             >
-                <title id="titleId">${track.name}, Artist: ${track.artists[0].name}</title>
-                <desc id="descId">Album: ${track.album.name}, Duration:gh${Math.floor(track.duration_ms / 60000)}:  ${((track.duration_ms % 60000) / 1000).toFixed(0).padStart(2, '0')}</desc>
+                <title id="titleId">${escapeXML(track.name)}, Artist: ${escapeXML(track.artists[0].name)}</title>
+                <desc id="descId">Album: ${escapeXML(track.album.name)}, Duration: ${Math.floor(track.duration_ms / 60000)}:${((track.duration_ms % 60000) / 1000).toFixed(0).padStart(2, '0')}</desc>
                 <style>
                     .header {
                         font: 600 20px 'Segoe UI', Ubuntu, Sans-Serif;
@@ -191,20 +200,21 @@ app.get('/', async (req, res) => {
                 <!-- Track Information -->
                 <g transform="translate(25, 380)">
                     <text class="stat bold" x="0" y="20">Track:</text>
-                    <text class="stat bold" x="70" y="20" data-testid="track">${track.name}</text>
+                    <text class="stat bold" x="70" y="20" data-testid="track">${escapeXML(track.name)}</text>
                 </g>
                 <g transform="translate(25, 420)">
                     <text class="stat bold" x="0" y="20">Artist:</text>
-                    <text class="stat bold" x="70" y="20" data-testid="artist">${track.artists[0].name}</text>
+                    <text class="stat bold" x="70" y="20" data-testid="artist">${escapeXML(track.artists[0].name)}</text>
                 </g>
                 <g transform="translate(25, 460)">
                     <text class="stat bold" x="0" y="20">Album:</text>
-                    <text class="stat bold" x="70" y="20" data-testid="album">${track.album.name}</text>
+                    <text class="stat bold" x="70" y="20" data-testid="album">${escapeXML(track.album.name)}</text>
                 </g>
-                <g transform="translate(25, 500)">
-                    <text class="stat bold" x="0" y="20">Duration:</text>
-                    <text class="stat bold" x="70" y="20" data-testid="duration">${Math.floor(track.duration_ms / 60000)}:${((track.duration_ms % 60000) / 1000).toFixed(0).padStart(2, '0')}</text>
-                </g>
+            <g transform="translate(25, 500)">
+    <text class="stat bold" x="0" y="20">Duration:</text>
+    <text class="stat bold" x="80" y="20" data-testid="duration">${Math.floor(track.duration_ms / 60000)}:${((track.duration_ms % 60000) / 1000).toFixed(0).padStart(2, '0')}</text>
+</g>
+
             </svg>
         `;
 
@@ -217,6 +227,7 @@ app.get('/', async (req, res) => {
         res.status(500).send('Error fetching track info.');
     }
 });
+
 
 
 // Route to render pretty page
