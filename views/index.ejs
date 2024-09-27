@@ -112,13 +112,18 @@
         }
 
         window.onload = () => {
+            // Get access token from URL
             accessToken = getAccessTokenFromUrl();
+            // Check if access token exists
             if (accessToken) {
+                // Start polling for the currently playing track
                 startPolling();
+                // Immediately fetch the currently playing track
                 getCurrentlyPlayingTrack();
             }
         };
 
+        // Event listener for the login button
         document.getElementById('login-btn').addEventListener('click', authorizeUser);
     </script>
 </body>
