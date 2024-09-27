@@ -25,8 +25,8 @@ jobs:
         run: |
           # Find the next image number
           if ls songs-pictures/image*.png 1> /dev/null 2>&1; then
-            # Get the highest number from existing images
-            highest=$(ls songs-pictures/image*.png | sed -E 's/^.*\/image([0-9]+)\.png$/\1/' | sort -n | tail -n 1)
+            # Get the highest number from existing images, using regex to extract numbers
+            highest=$(ls songs-pictures/image*.png | sed -E 's/.*\/image([0-9]+)\.png/\1/' | sort -n | tail -n 1)
             next=$((highest + 1))
           else
             next=1  # Start with 1 if no images exist
@@ -66,3 +66,4 @@ jobs:
           git add songs-pictures/image*.png README.md
           git commit -m "Update track info image to image${{ env.next_image }}.png" || echo "No changes to commit"
           git push
+      
