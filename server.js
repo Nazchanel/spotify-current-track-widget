@@ -84,19 +84,17 @@ app.get('/currently-playing', (req, res) => {
 // Route to serve live track information in SVG format
 // Route to serve live track information in SVG format
 app.get('/', async (req, res) => {
-    await refreshAccessToken();
+    await refreshAccessToken(); // Make sure access token is refreshed
 
     try {
         const response = await axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
             headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
+                Authorization: `Bearer ${accessToken}`,
+            },
         });
 
-        if (response.status === 200) {
-            const track = response.data.item;
-
-            // Adjust the SVG string to remove rounded corners from the box
+        // Handle the case where no song is currently playing
+        if (response.status === 204 || !response.data) {
             const svg = `
                 <svg
                     width="400"
@@ -107,8 +105,7 @@ app.get('/', async (req, res) => {
                     role="img"
                     aria-labelledby="descId"
                 >
-                    <title id="titleId">${track.name}, Artist: ${track.artists[0].name}</title>
-                    <desc id="descId">Album: ${track.album.name}, Duration: ${Math.floor(track.duration_ms / 60000)}:${((track.duration_ms % 60000) / 1000).toFixed(0).padStart(2, '0')}</desc>
+                    <title id="titleId">No song currently playing</title>
                     <style>
                         .header {
                             font: 600 20px 'Segoe UI', Ubuntu, Sans-Serif;
@@ -119,69 +116,104 @@ app.get('/', async (req, res) => {
                             font: 600 16px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif;
                             fill: #99d1ce;
                         }
-                        .stagger {
-                            opacity: 0;
-                            animation: fadeInAnimation 0.3s ease-in-out forwards;
-                        }
-                        .icon {
-                            fill: #599cab;
-                            display: block;
-                        }
                         .card-bg {
                             stroke: #960606;
                             fill: #0c1014;
                         }
-                        /* Animations */
                         @keyframes fadeInAnimation {
                             from { opacity: 0; }
                             to { opacity: 1; }
                         }
                     </style>
-
-                    <rect
-                        class="card-bg"
-                        x="0.5"
-                        y="0.5"
-                        height="99%"
-                        width="399"
-                        stroke-opacity="1"
-                    />
-
+                    <rect class="card-bg" x="0.5" y="0.5" height="99%" width="399" stroke-opacity="1" />
                     <g transform="translate(25, 25)">
-                        <text class="header" data-testid="header">Currently Playing</text>
-                    </g>
-
-                    <!-- Adjusted Album Cover -->
-                    <image href="${track.album.images[0].url}" x="50" y="60" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
-
-                    <!-- Track Information -->
-                    <g transform="translate(25, 380)">
-                        <text class="stat bold" x="0" y="20">Track:</text>
-                        <text class="stat bold" x="70" y="20" data-testid="track">${track.name}</text>
-                    </g>
-                    <g transform="translate(25, 420)">
-                        <text class="stat bold" x="0" y="20">Artist:</text>
-                        <text class="stat bold" x="70" y="20" data-testid="artist">${track.artists[0].name}</text>
-                    </g>
-                    <g transform="translate(25, 460)">
-                        <text class="stat bold" x="0" y="20">Album:</text>
-                        <text class="stat bold" x="70" y="20" data-testid="album">${track.album.name}</text>
-                    </g>
-                    <g transform="translate(25, 500)">
-                        <text class="stat bold" x="0" y="20">Duration:</text>
-                        <text class="stat bold" x="70" y="20" data-testid="duration">${Math.floor(track.duration_ms / 60000)}:${((track.duration_ms % 60000) / 1000).toFixed(0).padStart(2, '0')}</text>
+                        <text class="header" data-testid="header">No song is currently playing</text>
                     </g>
                 </svg>
             `;
 
-            // Set the content type to XML for SVG
+            // Return the SVG response for no song playing
             res.set('Content-Type', 'image/svg+xml');
             res.send(svg);
-        } else {
-            res.status(400).send('Failed to fetch track info.');
+            return;
         }
+
+        const track = response.data.item; // Extract track information if a song is playing
+
+        const svg = `
+            <svg
+                width="400"
+                height="600"
+                viewBox="0 0 400 600"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                role="img"
+                aria-labelledby="descId"
+            >
+                <title id="titleId">${track.name}, Artist: ${track.artists[0].name}</title>
+                <desc id="descId">Album: ${track.album.name}, Duration:gh${Math.floor(track.duration_ms / 60000)}:  ${((track.duration_ms % 60000) / 1000).toFixed(0).padStart(2, '0')}</desc>
+                <style>
+                    .header {
+                        font: 600 20px 'Segoe UI', Ubuntu, Sans-Serif;
+                        fill: #2aa889;
+                        animation: fadeInAnimation 0.8s ease-in-out forwards;
+                    }
+                    .stat {
+                        font: 600 16px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif;
+                        fill: #99d1ce;
+                    }
+                    .card-bg {
+                        stroke: #960606;
+                        fill: #0c1014;
+                    }
+                    @keyframes fadeInAnimation {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+                </style>
+
+                <rect
+                    class="card-bg"
+                    x="0.5"
+                    y="0.5"
+                    height="99%"
+                    width="399"
+                    stroke-opacity="1"
+                />
+
+                <g transform="translate(25, 25)">
+                    <text class="header" data-testid="header">Currently Playing</text>
+                </g>
+
+                <!-- Adjusted Album Cover -->
+                <image href="${track.album.images[0].url}" x="50" y="60" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
+
+                <!-- Track Information -->
+                <g transform="translate(25, 380)">
+                    <text class="stat bold" x="0" y="20">Track:</text>
+                    <text class="stat bold" x="70" y="20" data-testid="track">${track.name}</text>
+                </g>
+                <g transform="translate(25, 420)">
+                    <text class="stat bold" x="0" y="20">Artist:</text>
+                    <text class="stat bold" x="70" y="20" data-testid="artist">${track.artists[0].name}</text>
+                </g>
+                <g transform="translate(25, 460)">
+                    <text class="stat bold" x="0" y="20">Album:</text>
+                    <text class="stat bold" x="70" y="20" data-testid="album">${track.album.name}</text>
+                </g>
+                <g transform="translate(25, 500)">
+                    <text class="stat bold" x="0" y="20">Duration:</text>
+                    <text class="stat bold" x="70" y="20" data-testid="duration">${Math.floor(track.duration_ms / 60000)}:${((track.duration_ms % 60000) / 1000).toFixed(0).padStart(2, '0')}</text>
+                </g>
+            </svg>
+        `;
+
+        // Set the content type to XML for SVG
+        res.set('Content-Type', 'image/svg+xml');
+        res.send(svg);
+
     } catch (error) {
-        console.error(error);
+        console.error('Error fetching track info:', error);
         res.status(500).send('Error fetching track info.');
     }
 });
