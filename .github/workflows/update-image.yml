@@ -1,0 +1,29 @@
+name: Update Live Track Info Image
+
+on:
+  schedule:
+    - cron: '*/2 * * * *'  # Runs every 2 minutes
+
+jobs:
+  update-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Puppeteer
+        run: |
+          npm install puppeteer
+
+      - name: Generate SVG Image
+        run: |
+          node generate-image.js
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "eshaniyer@duck.com"
+          git config --local user.name "Eshan I."
+          git add songs-pictures/image.png
+          git commit -m "Update track info image" || echo "No changes to commit"
+          git push
+
