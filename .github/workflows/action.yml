@@ -2,6 +2,8 @@ name: Update Live Track Info Image
 
 on:
   workflow_dispatch:  # Manual trigger
+  schedule:           # Scheduled trigger
+    - cron: '*/2 * * * *'  # Runs every 2 minutes
 
 jobs:
   update-image:
@@ -11,10 +13,13 @@ jobs:
         uses: actions/checkout@v3  # Updated to the latest version
 
       - name: Output Run ID
-        run: echo "Run ID: ${{ github.run_id }}"
+        run: |
+         echo "Run ID: ${{ github.run_id }}"
 
       - name: Output Run Number
-        run: echo "Run Number: ${{ github.run_number }}"
+        run: |
+         echo "Run Number: ${{ github.run_number }}"
 
       - name: Output Run Attempt
-        run: echo "Run Attempt: ${{ github.run_attempt }}"  # Added quotes
+        run: |
+         echo "Run Attempt: ${{ github.run_attempt }}"
