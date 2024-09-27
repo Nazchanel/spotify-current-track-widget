@@ -3,7 +3,7 @@ name: Update Live Track Info Image
 on:
   workflow_dispatch:  # Manual trigger
   schedule:           # Scheduled trigger
-    - cron: '*/1 * * * *'  # Runs every minute
+    - cron: '*/2 * * * *'  # Runs every 2 minutes
 
 jobs:
   update-image:
@@ -20,10 +20,31 @@ jobs:
         run: |
           node generate-image.js
 
+      - name: Determine Next Image Filename
+        id: next_image
+        run: |
+          # Find the next image number
+          if ls songs-pictures/image*.png 1> /dev/null 2>&1; then
+            # Get the highest number from existing images
+            highest=$(ls songs-pictures/image*.png | sed -E 's/^.*\/image([0-9]+)\.png$/\1/' | sort -n | tail -n 1)
+            next=$((highest + 1))
+          else
+            next=1  # Start with 1 if no images exist
+          fi
+          echo "next_image=$next" >> $GITHUB_ENV
+
+      - name: Rename and Update README
+        run: |
+          # Rename the image
+          mv songs-pictures/image.png songs-pictures/image${{ env.next_image }}.png
+
+          # Update the README.md file
+          sed -i "s|![](songs-pictures/image.png)|![](songs-pictures/image${{ env.next_image }}.png)|" README.md
+
       - name: Commit and push changes
         run: |
           git config --local user.email "eshaniyer@duck.com"
           git config --local user.name "Eshan I."
-          git add songs-pictures/image.png
-          git commit -m "Update track info image" || echo "No changes to commit"
+          git add songs-pictures/image*.png README.md
+          git commit -m "Update track info image to image${{ env.next_image }}.png" || echo "No changes to commit"
           git push
