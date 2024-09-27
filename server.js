@@ -96,7 +96,7 @@ app.get('/', async (req, res) => {
         if (response.status === 200) {
             const track = response.data.item;
 
-            // Adjust the SVG string to avoid cutting off the album cover
+            // Adjust the SVG string to remove rounded corners from the box
             const svg = `
                 <svg
                     width="400"
@@ -142,7 +142,6 @@ app.get('/', async (req, res) => {
                         class="card-bg"
                         x="0.5"
                         y="0.5"
-                        rx="20"
                         height="99%"
                         width="399"
                         stroke-opacity="1"
