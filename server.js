@@ -164,7 +164,10 @@ app.get('/', async (req, res) => {
         res.status(500).send('Error fetching track info.');
     }
 });
-
+app.get('/pretty', async (req, res) => {
+    const clientId = process.env.SPOTIFY_CLIENT_ID || 'YOUR_CLIENT_ID_HERE'; // Fallback for local testing
+    res.render('index', { clientId }); // Pass clientId to the EJS template
+}
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Currently Playing Track</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212; /* Dark background */
+            color: #ffffff;
+            margin: 0; /* Remove default margin */
+            height: 100vh; /* Full height */
+            display: flex; /* Use flexbox for alignment */
+            align-items: flex-start; /* Align to the top */
+            justify-content: flex-start; /* Align to the left */
+            padding: 20px; /* Padding around the box */
+        }
+        h1 {
+            color: #1DB954; /* Spotify Green */
+            display: none; /* Hide the heading */
+        }
+        #currently-playing {
+            background-color: #282828; /* Dark box */
+            border-radius: 15px; /* Rounded corners */
+            padding: 30px; /* Increased padding inside the box */
+            max-width: 400px; /* Increased max width for the box */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Soft shadow */
+            transition: transform 0.3s; /* Smooth hover effect */
+            position: relative; /* Position relative for potential child elements */
+        }
+        #currently-playing:hover {
+            transform: scale(1.02); /* Slightly enlarge on hover */
+        }
+        img {
+            border-radius: 10px; /* Rounded album cover */
+            margin-top: 15px; /* Increased space above the image */
+            width: 100%; /* Full width */
+            height: auto; /* Maintain aspect ratio */
+        }
+        p {
+            margin: 15px 0; /* Increased space between paragraphs */
+            font-size: 18px; /* Slightly larger font size for better readability */
+        }
+    </style>
+</head>
+<body>
+    <div id="currently-playing">
+        <h2>Track Info</h2>
+        <p id="track-name">Track Name: N/A</p>
+        <p id="artist-name">Artist: N/A</p>
+        <p id="album-name">Album: N/A</p>
+        <img id="album-cover" src="" alt="Album Cover">
+    </div>
+
+    <script>
+        async function getCurrentlyPlayingTrack() {
+            const response = await fetch('/currently-playing');
+
+            if (response.ok) {
+                const data = await response.json();
+                updateTrackInfo(data);
+            } else {
+                console.error('Failed to get currently playing track:', response.status);
+            }
+        }
+
+        function updateTrackInfo(data) {
+            const trackNameElement = document.getElementById('track-name');
+            const artistNameElement = document.getElementById('artist-name');
+            const albumNameElement = document.getElementById('album-name');
+            const albumCoverElement = document.getElementById('album-cover');
+
+            if (data && data.item) {
+                trackNameElement.textContent = `Track Name: ${data.item.name}`;
+                artistNameElement.textContent = `Artist: ${data.item.artists[0].name}`;
+                albumNameElement.textContent = `Album: ${data.item.album.name}`;
+                albumCoverElement.src = data.item.album.images[0].url;
+            } else {
+                trackNameElement.textContent = 'Track Name: N/A';
+                artistNameElement.textContent = 'Artist: N/A';
+                albumNameElement.textContent = 'Album: N/A';
+                albumCoverElement.src = '';
+            }
+        }
+
+        function startPolling() {
+            getCurrentlyPlayingTrack(); // Initial fetch
+            setInterval(getCurrentlyPlayingTrack, 2000); // Poll every 2 seconds
+        }
+
+        window.onload = () => {
+            startPolling();
+        };
+    </script>
+</body>
+</html>
