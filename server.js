@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static('public'));
 
 const refreshToken = process.env.REFRESH_TOKEN;
+let accessToken; // Declare accessToken here to maintain its state across requests
 
 // Set EJS as the templating engine
 app.set('view engine', 'ejs');
@@ -37,9 +38,13 @@ async function refreshAccessToken() {
     }
 }
 
-//  Route for getting currently playing track
-app.get('/currently-playing', async (req, res) => {
+// Middleware to fetch currently playing track
+async function fetchCurrentlyPlaying(req, res, next) {
     await refreshAccessToken(); // Refresh access token before making a request
+    if (!accessToken) {
+        return res.status(401).send('Access token is required');
+    }
+
     try {
         const response = await axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
             headers: {
@@ -48,55 +53,38 @@ app.get('/currently-playing', async (req, res) => {
         });
 
         if (response.status === 200) {
-            res.json(response.data);
+            req.currentTrack = response.data.item; // Attach currently playing track to the request
         } else {
-            res.status(response.status).json({ error: 'Unable to fetch currently playing track' });
+            req.currentTrack = null; // No currently playing track
         }
     } catch (error) {
         console.error('Error fetching currently playing track:', error);
-        res.status(500).json({ error: 'Error fetching currently playing track' });
+        req.currentTrack = null; // Handle error by setting currentTrack to null
     }
-});
+
+    next(); // Proceed to the next middleware or route handler
+}
+
+// Apply middleware to all routes
+app.use(fetchCurrentlyPlaying);
 
 // Route for the home page
 app.get('/other', (req, res) => {
-    const accessToken = process.env.ACCESS_TOKEN; // Get access token from environment variable
-    res.render('index', { accessToken });
+    res.render('index', { accessToken, currentTrack: req.currentTrack });
 });
 
 // Route to fetch currently playing track as JSON
-app.get('/currently-playing', async (req, res) => {
-    const accessToken = process.env.ACCESS_TOKEN; // Use your stored access token
-
-    if (!accessToken) {
-        return res.status(401).send('Access token is required');
+app.get('/currently-playing', (req, res) => {
+    if (!req.currentTrack) {
+        return res.status(204).send('No track is currently playing.');
     }
-
-    try {
-        const response = await axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
-            headers: {
-                'Authorization': `Bearer ${accessToken}`
-            }
-        });
-
-        if (response.status === 200) {
-            res.json(response.data.item); // Return track information as JSON
-        } else {
-            res.status(400).send('Failed to fetch track info.');
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Error fetching track info.');
-    }
+    res.json(req.currentTrack); // Return track information as JSON
 });
 
 // Route to serve live track information in SVG format
+// Route to serve live track information in SVG format
 app.get('/', async (req, res) => {
-    const accessToken = process.env.ACCESS_TOKEN; // Use your stored access token
-
-    if (!accessToken) {
-        return res.status(401).send('Access token is required');
-    }
+    await refreshAccessToken();
 
     try {
         const response = await axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
@@ -108,7 +96,7 @@ app.get('/', async (req, res) => {
         if (response.status === 200) {
             const track = response.data.item;
 
-            // Create the SVG string with album cover
+            // Adjust the SVG string to avoid cutting off the album cover
             const svg = `
                 <svg
                     width="400"
@@ -128,7 +116,8 @@ app.get('/', async (req, res) => {
                             animation: fadeInAnimation 0.8s ease-in-out forwards;
                         }
                         .stat {
-                            font: 600 16px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: #99d1ce;
+                            font: 600 16px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif;
+                            fill: #99d1ce;
                         }
                         .stagger {
                             opacity: 0;
@@ -163,13 +152,8 @@ app.get('/', async (req, res) => {
                         <text class="header" data-testid="header">Currently Playing</text>
                     </g>
 
-                    <!-- Album Cover -->
-                    <image href="${track.album.images[0].url}" x="50" y="60" width="300" height="300" clip-path="url(#clip)" />
-                    <defs>
-                        <clipPath id="clip">
-                            <rect width="300" height="300" />
-                        </clipPath>
-                    </defs>
+                    <!-- Adjusted Album Cover -->
+                    <image href="${track.album.images[0].url}" x="50" y="60" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
 
                     <!-- Track Information -->
                     <g transform="translate(25, 380)">
@@ -203,10 +187,11 @@ app.get('/', async (req, res) => {
     }
 });
 
+
 // Route to render pretty page
-app.get('/pretty', async (req, res) => {
+app.get('/pretty', (req, res) => {
     const clientId = process.env.SPOTIFY_CLIENT_ID || 'YOUR_CLIENT_ID_HERE'; // Fallback for local testing
-    res.render('pretty', { clientId }); // Pass clientId to the EJS template
+    res.render('pretty', { clientId, currentTrack: req.currentTrack }); // Pass currentTrack to the EJS template
 });
 
 // Start the server

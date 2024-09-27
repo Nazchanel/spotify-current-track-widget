@@ -52,30 +52,30 @@
         <p id="album-name">Album: N/A</p>
         <img id="album-cover" src="" alt="Album Cover">
     </div>
-
+    
     <script>
         async function getCurrentlyPlayingTrack() {
             const response = await fetch('/currently-playing');
-
+            
             if (response.ok) {
                 const data = await response.json();
-                updateTrackInfo(data);
+                updateTrackInfo(data); // Pass the data directly
             } else {
                 console.error('Failed to get currently playing track:', response.status);
             }
         }
-
+        
         function updateTrackInfo(data) {
             const trackNameElement = document.getElementById('track-name');
             const artistNameElement = document.getElementById('artist-name');
             const albumNameElement = document.getElementById('album-name');
             const albumCoverElement = document.getElementById('album-cover');
-
-            if (data && data.item) {
-                trackNameElement.textContent = `Track Name: ${data.item.name}`;
-                artistNameElement.textContent = `Artist: ${data.item.artists[0].name}`;
-                albumNameElement.textContent = `Album: ${data.item.album.name}`;
-                albumCoverElement.src = data.item.album.images[0].url;
+            
+            if (data) {
+                trackNameElement.textContent = `Track Name: ${data.name}`;
+                artistNameElement.textContent = `Artist: ${data.artists.map(artist => artist.name).join(', ')}`;
+                albumNameElement.textContent = `Album: ${data.album.name}`;
+                albumCoverElement.src = data.album.images[0].url;
             } else {
                 trackNameElement.textContent = 'Track Name: N/A';
                 artistNameElement.textContent = 'Artist: N/A';
@@ -83,15 +83,16 @@
                 albumCoverElement.src = '';
             }
         }
-
+        
         function startPolling() {
             getCurrentlyPlayingTrack(); // Initial fetch
             setInterval(getCurrentlyPlayingTrack, 2000); // Poll every 2 seconds
         }
-
+        
         window.onload = () => {
             startPolling();
         };
     </script>
+    
 </body>
 </html>
