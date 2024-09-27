@@ -2,6 +2,8 @@ name: Update Live Track Info Image
 
 on:
   workflow_dispatch:  # Manual trigger
+  schedule:           # Scheduled trigger
+    - cron: '*/1 * * * *'  # Runs every minute
 
 jobs:
   update-image:
@@ -25,4 +27,3 @@ jobs:
           git add songs-pictures/image.png
           git commit -m "Update track info image" || echo "No changes to commit"
           git push
-
