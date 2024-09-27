@@ -32,9 +32,14 @@ jobs:
           
           sed -i "s|!\[\](songs-pictures/image${last_run_number}.png)|!\[\](songs-pictures/image${current_run_number}.png)|g" README.md
           
-          # remove old image
+          echo "Before:"
+          ls songs-pictures
+          
           rm songs-pictures/image${last_run_number}.png
 
+          echo "After:"
+          ls songs-pictures
+        
           echo "README.md updated text:"
           cat README.md      
       - name: Commit and push changes
