@@ -1,4 +1,4 @@
-name: Update Live Track Info Image
+name: test
 
 on:
   workflow_dispatch:  # Manual trigger
