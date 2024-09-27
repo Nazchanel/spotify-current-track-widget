@@ -3,5 +3,5 @@ just want to show the song that I'm listening to on spotify to show on my README
 
 <img width="400" src="https://spotify-current-track-widget.onrender.com/" alt="Live Track Info" />
 
-![](songs-pictures/image42.png)
+![](songs-pictures/image43.png)
 
