@@ -26,8 +26,8 @@ jobs:
 
       - name: Update README.md
         run: |
-          sed -i 's|![](songs-pictures/image.png)|![](songs-pictures/image${{ github.run_number }}.png)|g' README.md
-
+          awk -v run_number="${{ github.run_number }}" '{gsub(/!\[\]\(songs-pictures\/image.png\)/, "![](songs-pictures/image" run_number ".png)")}1' README.md > temp.md && mv temp.md README.md
+      
       - name: Commit and push changes
         run: |
           git config --local user.email "eshaniyer@duck.com"
