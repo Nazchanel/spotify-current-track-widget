@@ -20,49 +20,18 @@ jobs:
         run: |
           node generate-image.js
 
-      - name: Determine Next Image Filename
-        id: next_image
+      - name: Rename image
         run: |
-          # Find the next image number
-          if ls songs-pictures/image*.png 1> /dev/null 2>&1; then
-            # Get the highest number from existing images, using regex to extract numbers
-            highest=$(ls songs-pictures/image*.png | sed -E 's/.*\/image([0-9]+)\.png/\1/' | sort -n | tail -n 1)
-            next=$((highest + 1))
-          else
-            next=1  # Start with 1 if no images exist
-          fi
-          echo "next_image=$next" >> $GITHUB_ENV
-          echo "Next image will be: image$next.png"  # Debug output
+          mv songs-pictures/image.png songs-pictures/image${{ github.run_number }}.png
 
-      - name: Rename and Update README
+      - name: Update README.md
         run: |
-          # Define the new filename
-          new_filename="songs-pictures/image${{ env.next_image }}.png"
-          echo "Renaming image to: $new_filename"  # Debug output
-
-          # Check if the original image exists
-          if [ -f "songs-pictures/image.png" ]; then
-            # Only rename if the new filename is different from the original
-            if [ "$new_filename" != "songs-pictures/image.png" ]; then
-              mv songs-pictures/image.png "$new_filename"
-              echo "Successfully renamed image to $new_filename"
-            else
-              echo "Error: New filename is the same as the original. Cannot rename."
-              exit 1
-            fi
-          else
-            echo "Error: songs-pictures/image.png does not exist."
-            exit 1  # Exit if the image does not exist
-          fi
-
-          # Update the README.md file
-          sed -i "s|![](songs-pictures/image.png)|![]($new_filename)|" README.md
-          echo "Updated README.md to reference $new_filename"  # Debug output
+          sed -i 's|![](songs-pictures/image.png)|![](songs-pictures/image${{ github.run_number }}.png)|g' README.md
 
       - name: Commit and push changes
         run: |
           git config --local user.email "eshaniyer@duck.com"
           git config --local user.name "Eshan I."
-          git add songs-pictures/image*.png README.md
-          git commit -m "Update track info image to image${{ env.next_image }}.png" || echo "No changes to commit"
+          git add songs-pictures/image${{ github.run_number }}.png README.md
+          git commit -m "Update track info image to image${{ github.run_number }}" || echo "No changes to commit"
           git push
