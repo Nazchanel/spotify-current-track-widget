@@ -39,11 +39,17 @@ jobs:
           # Define the new filename
           new_filename="songs-pictures/image${{ env.next_image }}.png"
           echo "Renaming image to: $new_filename"  # Debug output
-          
+
           # Check if the original image exists
           if [ -f "songs-pictures/image.png" ]; then
-            # Rename the image
-            mv songs-pictures/image.png "$new_filename"
+            # Only rename if the new filename is different from the original
+            if [ "$new_filename" != "songs-pictures/image.png" ]; then
+              mv songs-pictures/image.png "$new_filename"
+              echo "Successfully renamed image to $new_filename"
+            else
+              echo "Error: New filename is the same as the original. Cannot rename."
+              exit 1
+            fi
           else
             echo "Error: songs-pictures/image.png does not exist."
             exit 1  # Exit if the image does not exist
