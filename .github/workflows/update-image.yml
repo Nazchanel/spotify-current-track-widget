@@ -2,8 +2,8 @@ name: Update Live Track Info Image
 
 on:
   workflow_dispatch:  # Manual trigger
-  # schedule:           # Scheduled trigger
-  #   - cron: '*/2 * * * *'  # Runs every 2 minutes
+  schedule:           # Scheduled trigger
+    - cron: '*/2 * * * *'  # Runs every 2 minutes
 
 jobs:
   update-image:
