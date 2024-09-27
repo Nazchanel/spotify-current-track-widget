@@ -35,11 +35,14 @@ jobs:
 
       - name: Rename and Update README
         run: |
+          # Define the new filename
+          new_filename="songs-pictures/image${{ env.next_image }}.png"
+          
           # Rename the image
-          mv songs-pictures/image.png songs-pictures/image${{ env.next_image }}.png
+          mv songs-pictures/image.png "$new_filename"
 
           # Update the README.md file
-          sed -i "s|![](songs-pictures/image.png)|![](songs-pictures/image${{ env.next_image }}.png)|" README.md
+          sed -i "s|![](songs-pictures/image.png)|![]($new_filename)|" README.md
 
       - name: Commit and push changes
         run: |
