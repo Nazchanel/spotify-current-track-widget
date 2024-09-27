@@ -47,7 +47,7 @@ jobs:
           current_run_number=${{ github.run_number }}
           last_run_number=${(current_run_number - 1))
 
-          echo $last_run_number
+          echo "Last Run Number: ${last_run_number}"
 
           git config --local user.email "eshaniyer@duck.com"
           git config --local user.name "Eshan I."
