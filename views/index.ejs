@@ -7,91 +7,87 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #121212; /* Dark background */
+            background-color: #121212;
             color: #ffffff;
-            margin: 0; /* Remove default margin */
-            height: 100vh; /* Full height */
-            display: flex; /* Use flexbox for alignment */
-            align-items: flex-start; /* Align to the top */
-            justify-content: flex-start; /* Align to the left */
-            padding: 20px; /* Padding around the box */
+            display: flex;
+            justify-content: flex-start; /* Align items to the start */
+            align-items: flex-start; /* Align items to the start */
+            height: 100vh; /* Full height of the viewport */
+            padding: 20px;
         }
-        h1 {
-            color: #1DB954; /* Spotify Green */
-            display: none; /* Hide the heading */
-        }
-        #currently-playing {
-            background-color: #282828; /* Dark box */
-            border-radius: 15px; /* Rounded corners */
-            padding: 30px; /* Increased padding inside the box */
-            max-width: 400px; /* Increased max width for the box */
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Soft shadow */
-            transition: transform 0.3s; /* Smooth hover effect */
-            position: relative; /* Position relative for potential child elements */
-        }
-        #currently-playing:hover {
-            transform: scale(1.02); /* Slightly enlarge on hover */
+        #track-info {
+            background-color: #282828;
+            border-radius: 15px; /* Modern rounded corners */
+            padding: 20px;
+            max-width: 400px; /* Define max width */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column; /* Align items vertically */
+            align-items: center; /* Center items horizontally */
         }
         img {
-            border-radius: 10px; /* Rounded album cover */
-            margin-top: 15px; /* Increased space above the image */
-            width: 100%; /* Full width */
+            border-radius: 10px; /* Match border radius with other elements */
+            margin-top: 20px; /* Space above image */
+            width: 100%; /* Make image responsive */
+            max-width: 400px; /* Maximum width */
             height: auto; /* Maintain aspect ratio */
-        }
-        p {
-            margin: 15px 0; /* Increased space between paragraphs */
-            font-size: 18px; /* Slightly larger font size for better readability */
         }
     </style>
 </head>
 <body>
-    <div id="currently-playing">
-        <h2>Track Info</h2>
-        <p id="track-name">Track Name: N/A</p>
-        <p id="artist-name">Artist: N/A</p>
-        <p id="album-name">Album: N/A</p>
-        <img id="album-cover" src="" alt="Album Cover">
+    <div id="track-info">
+        <h1>Spotify Currently Playing Track</h1>
+        <canvas id="trackCanvas" width="400" height="200" style="display:none;"></canvas>
+        <img id="trackImage" alt="Currently Playing Track" />
     </div>
 
     <script>
+        const accessToken = '<%= accessToken %>';  // This will be set in the server
+        const trackInfo = document.getElementById('trackCanvas');
+        const context = trackInfo.getContext('2d');
+        const trackImage = document.getElementById('trackImage');
+
         async function getCurrentlyPlayingTrack() {
-            const response = await fetch('/currently-playing');
+            const response = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
 
             if (response.ok) {
                 const data = await response.json();
-                updateTrackInfo(data);
+                if (data && data.item) {
+                    drawTrackInfo(data.item);
+                }
             } else {
-                console.error('Failed to get currently playing track:', response.status);
+                console.log('Failed to fetch track info.');
             }
         }
 
-        function updateTrackInfo(data) {
-            const trackNameElement = document.getElementById('track-name');
-            const artistNameElement = document.getElementById('artist-name');
-            const albumNameElement = document.getElementById('album-name');
-            const albumCoverElement = document.getElementById('album-cover');
+        function drawTrackInfo(track) {
+            // Clear the canvas
+            context.clearRect(0, 0, trackInfo.width, trackInfo.height);
 
-            if (data && data.item) {
-                trackNameElement.textContent = `Track Name: ${data.item.name}`;
-                artistNameElement.textContent = `Artist: ${data.item.artists[0].name}`;
-                albumNameElement.textContent = `Album: ${data.item.album.name}`;
-                albumCoverElement.src = data.item.album.images[0].url;
-            } else {
-                trackNameElement.textContent = 'Track Name: N/A';
-                artistNameElement.textContent = 'Artist: N/A';
-                albumNameElement.textContent = 'Album: N/A';
-                albumCoverElement.src = '';
-            }
+            // Set background color
+            context.fillStyle = '#282828';
+            context.fillRect(0, 0, trackInfo.width, trackInfo.height);
+
+            // Set text styles
+            context.fillStyle = '#ffffff';
+            context.font = '20px Arial';
+
+            // Draw track info
+            context.fillText(`Track: ${track.name}`, 20, 40);
+            context.fillText(`Artist: ${track.artists[0].name}`, 20, 80);
+            context.fillText(`Album: ${track.album.name}`, 20, 120);
+
+            // Convert canvas to data URL
+            const imageURL = trackInfo.toDataURL("image/png");
+            trackImage.src = imageURL; // Set the image source to the canvas data
         }
 
-        function startPolling() {
-            getCurrentlyPlayingTrack(); // Initial fetch
-            setInterval(getCurrentlyPlayingTrack, 2000); // Poll every 2 seconds
-        }
-
-        window.onload = () => {
-            startPolling();
-        };
+        setInterval(getCurrentlyPlayingTrack, 2000); // Poll every 2 seconds
+        window.onload = getCurrentlyPlayingTrack; // Initial call on page load
     </script>
 </body>
 </html>
