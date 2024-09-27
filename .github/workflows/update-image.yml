@@ -45,15 +45,16 @@ jobs:
       - name: Commit and push changes
         run: |
           current_run_number=${{ github.run_number }}
-          last_run_number=$((current_run_number - 1))
+          last_run_number=${(current_run_number - 1))
+
+          echo $last_run_number
 
           git config --local user.email "eshaniyer@duck.com"
           git config --local user.name "Eshan I."
 
-          git rm songs-pictures/image$(last_run_number).png
+          git rm songs-pictures/image${last_run_number}.png
           git add songs-pictures/image${{ github.run_number }}.png README.md
 
-          git commit -m "Remove image71.png and update track info image to image${{ github.run_number }}" || echo "No changes to commit"
-
+          git commit -m "Remove image${last_run_number}.png and update track info image to image${{ github.run_number }}" || echo "No changes to commit
           git push
 
