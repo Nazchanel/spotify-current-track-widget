@@ -29,7 +29,12 @@ jobs:
           # Calculate last run number
           current_run_number=${{ github.run_number }}  # Replace this with the actual value
           last_run_number=$((current_run_number - 1))
+          
           sed -i "s|!\[\](songs-pictures/image${last_run_number}.png)|!\[\](songs-pictures/image${current_run_number}.png)|g" README.md
+          
+          # remove old image
+          rm songs-pictures/image${last_run_number}.png
+
           echo "README.md updated text:"
           cat README.md      
       - name: Commit and push changes
