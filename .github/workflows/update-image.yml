@@ -59,7 +59,13 @@ jobs:
           git config --local user.email "eshaniyer@duck.com"
           git config --local user.name "Eshan I."
 
-          git rm -f songs-pictures/image${last_run_number}.png
+          if git ls-files --error-unmatch songs-pictures/image${last_run_number}.png > /dev/null 2>&1; then
+              git rm songs-pictures/image${last_run_number}.png
+              echo "Removed songs-pictures/image${last_run_number}.png from git"
+          else
+            echo "File songs-pictures/image${last_run_number}.png not found in git, skipping removal"
+          fi       
+                            
           git add songs-pictures/image${current_run_number}.png README.md
 
           git commit -m "Remove image${last_run_number}.png and update track info image to image${current_run_number}" || echo "No changes to commit"
