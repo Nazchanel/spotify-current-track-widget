@@ -35,7 +35,6 @@ jobs:
           echo "Before:"
           ls songs-pictures
           
-          rm songs-pictures/image${last_run_number}.png
           if [[ -f "songs-pictures/image${last_run_number}.png" ]]; then
             rm songs-pictures/image${last_run_number}.png
             echo "Removed: songs-pictures/image${last_run_number}.png"
