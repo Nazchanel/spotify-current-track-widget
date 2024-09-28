@@ -36,6 +36,14 @@ jobs:
           ls songs-pictures
           
           rm songs-pictures/image${last_run_number}.png
+          if [[ -f "songs-pictures/image${last_run_number}.png" ]]; then
+            rm songs-pictures/image${last_run_number}.png
+            echo "Removed: songs-pictures/image${last_run_number}.png"
+          else
+            echo "No file to remove: songs-pictures/image${last_run_number}.png does not exist."
+          fi
+
+
 
           echo "After:"
           ls songs-pictures
@@ -52,7 +60,7 @@ jobs:
           git config --local user.email "eshaniyer@duck.com"
           git config --local user.name "Eshan I."
 
-          git rm songs-pictures/image${last_run_number}.png
+          git rm -f songs-pictures/image${last_run_number}.png
           git add songs-pictures/image${current_run_number}.png README.md
 
           git commit -m "Remove image${last_run_number}.png and update track info image to image${current_run_number}" || echo "No changes to commit"
