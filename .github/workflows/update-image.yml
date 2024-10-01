@@ -19,9 +19,12 @@ jobs:
       - name: Generate SVG Image
         run: |
           set -e
+
+          current_run_number=${{ github.run_number }}
+          last_run_number=$((current_run_number - 1))
+
           if ! node generate-image.js; then
             echo "Image generation failed. Renaming the previous image."
-            last_run_number=$((current_run_number - 1))
             mv songs-pictures/image${last_run_number}.png songs-pictures/image.png
           fi
 
@@ -78,5 +81,6 @@ jobs:
 
           git commit -m "Remove image${last_run_number}.png and update track info image to image${current_run_number}" || echo "No changes to commit"
 
+          
           # Push using the personal access token for the alternate account
           git push --force https://Nazchanel:${GITHUB_TOKEN_ALT}@github.com/Nazchanel/spotify-current-track-widget.git
