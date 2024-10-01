@@ -18,7 +18,12 @@ jobs:
 
       - name: Generate SVG Image
         run: |
-          node generate-image.js
+          set -e
+          if ! node generate-image.js; then
+            echo "Image generation failed. Renaming the previous image."
+            last_run_number=$((current_run_number - 1))
+            mv songs-pictures/image${last_run_number}.png songs-pictures/image.png
+          fi
 
       - name: Rename image
         run: |
@@ -42,13 +47,12 @@ jobs:
             echo "No file to remove: songs-pictures/image${last_run_number}.png does not exist."
           fi
 
-
-
           echo "After:"
           ls songs-pictures
         
           echo "README.md updated text:"
           cat README.md      
+      
       - name: Commit and push changes
         env:
           GITHUB_TOKEN_ALT: ${{ secrets.ALT_GITHUB_PAT }}
