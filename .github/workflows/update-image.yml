@@ -75,4 +75,4 @@ jobs:
           git commit -m "Remove image${last_run_number}.png and update track info image to image${current_run_number}" || echo "No changes to commit"
 
           # Push using the personal access token for the alternate account
-          git push https://Nazchanel:${GITHUB_TOKEN_ALT}@github.com/Nazchanel/spotify-current-track-widget.git
+          git push --force https://Nazchanel:${GITHUB_TOKEN_ALT}@github.com/Nazchanel/spotify-current-track-widget.git
